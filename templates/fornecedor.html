@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <title>Gerenciamento de Fornecedores</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container mt-4">
+        <h1 class="mb-4">Gerenciamento de Fornecedores</h1>
+
+        <!-- Mensagens Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-4">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de Cadastro de Fornecedores -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>Adicionar/Editar Fornecedor</h2>
+                <form method="POST" action="{{ url_for('gerenciar_fornecedores') }}">
+                    <input type="hidden" id="fornecedor_id" name="fornecedor_id"
+                        value="{{ fornecedor.id if fornecedor else '' }}">
+
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ:</label>
+                        <input type="text" class="form-control" id="cnpj" name="cnpj" required
+                            value="{{ fornecedor.cnpj if fornecedor else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="nome">Nome:</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required
+                            value="{{ fornecedor.nome if fornecedor else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="endereco">Endereço:</label>
+                        <input type="text" class="form-control" id="endereco" name="endereco" required
+                            value="{{ fornecedor.endereco if fornecedor else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone:</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" required
+                            value="{{ fornecedor.telefone if fornecedor else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" class="form-control" id="email" name="email" required
+                            value="{{ fornecedor.email if fornecedor else '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-success">{{ 'Editar' if fornecedor else 'Adicionar' }}</button>
+                    <a href="{{ url_for('gerenciar_fornecedores') }}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabela de Fornecedores -->
+        <div class="card">
+            <div class="card-body">
+                <h2>Lista de Fornecedores</h2>
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>CNPJ</th>
+                            <th>Nome</th>
+                            <th>Endereço</th>
+                            <th>Telefone</th>
+                            <th>Email</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fornecedor in fornecedores %}
+                        <tr>
+                            <td>{{ fornecedor.id }}</td>
+                            <td>{{ fornecedor.cnpj }}</td>
+                            <td>{{ fornecedor.nome }}</td>
+                            <td>{{ fornecedor.endereco }}</td>
+                            <td>{{ fornecedor.telefone }}</td>
+                            <td>{{ fornecedor.email }}</td>
+                            <td>
+                                <a href="{{ url_for('gerenciar_fornecedores', fornecedor_id=fornecedor.id) }}"
+                                    class="btn btn-warning btn-sm">Editar</a>
+                                <a href="{{ url_for('excluir_fornecedor', id=fornecedor.id) }}"
+                                    class="btn btn-danger btn-sm">Excluir</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <a href="/" class="btn btn-secondary mt-4">Voltar ao Início</a>
+    </div>
+</body>
+
+</html>

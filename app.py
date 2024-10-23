@@ -42,6 +42,18 @@ class Usuario(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class Fornecedor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cnpj = db.Column(db.String(18), nullable=False, unique=True)
+    nome = db.Column(db.String(100), nullable=False)
+    endereco = db.Column(db.String(200), nullable=False)
+    telefone = db.Column(db.String(15), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+
+    def __repr__(self):
+        return f"<Fornecedor {self.nome}>"
+
+
 class LogMovimentacao(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
@@ -179,6 +191,58 @@ def movimentacoes():
     return render_template("movimentacoes.html", logs=logs)
 
 
+@app.route("/fornecedores", methods=["GET", "POST"])
+@login_required
+def gerenciar_fornecedores():
+    fornecedor_id = request.args.get("fornecedor_id")
+    fornecedor = Fornecedor.query.get(fornecedor_id) if fornecedor_id else None
+
+    if request.method == "POST":
+        if fornecedor:  # Editando fornecedor
+            fornecedor.cnpj = request.form["cnpj"]
+            fornecedor.nome = request.form["nome"]
+            fornecedor.endereco = request.form["endereco"]
+            fornecedor.telefone = request.form["telefone"]
+            fornecedor.email = request.form["email"]
+            db.session.commit()
+            flash("Fornecedor editado com sucesso!", "success")
+        else:  # Novo fornecedor
+            cnpj = request.form["cnpj"]
+            nome = request.form["nome"]
+            endereco = request.form["endereco"]
+            telefone = request.form["telefone"]
+            email = request.form["email"]
+
+            fornecedor_existente = Fornecedor.query.filter_by(cnpj=cnpj).first()
+            if fornecedor_existente:
+                flash("Já existe um fornecedor com esse CNPJ!", "error")
+                return redirect(url_for("gerenciar_fornecedores"))
+
+            novo_fornecedor = Fornecedor(
+                cnpj=cnpj, nome=nome, endereco=endereco, telefone=telefone, email=email
+            )
+            db.session.add(novo_fornecedor)
+            db.session.commit()
+            flash("Fornecedor adicionado com sucesso!", "success")
+
+        return redirect(url_for("gerenciar_fornecedores"))
+
+    fornecedores = Fornecedor.query.all()
+    return render_template(
+        "fornecedor.html", fornecedores=fornecedores, fornecedor=fornecedor
+    )
+
+
+@app.route("/excluir_fornecedor/<int:id>")
+@login_required
+def excluir_fornecedor(id):
+    fornecedor = Fornecedor.query.get_or_404(id)
+    db.session.delete(fornecedor)
+    db.session.commit()
+    flash("Fornecedor excluído com sucesso!", "success")
+    return redirect(url_for("gerenciar_fornecedores"))
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -202,15 +266,6 @@ def logout():
     session.pop("user_id", None)
     flash("Logout realizado com sucesso!", "success")
     return redirect(url_for("login"))
-
-
-@app.route("/criar_usuario")
-def criar_usuario():
-    user = Usuario(username="essence")
-    user.set_password("S9mqiplfPLXNlN")
-    db.session.add(user)
-    db.session.commit()
-    return "Usuário criado!"
 
 
 if __name__ == "__main__":
