@@ -51,7 +51,33 @@ class Fornecedor(db.Model):
     email = db.Column(db.String(100), nullable=False)
 
     def __repr__(self):
-        return f"<Fornecedor {self.nome}>"
+        return f'<Fornecedor {self.nome}>'
+
+
+class NotaFiscal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    numero_nf = db.Column(db.String(20), nullable=False, unique=True)
+    data_emissao = db.Column(db.Date, nullable=False)
+    data_entrega = db.Column(db.Date, nullable=False)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedor.id'), nullable=False)
+    
+    fornecedor = db.relationship('Fornecedor', backref=db.backref('notas_fiscais', lazy=True))
+
+    def __repr__(self):
+        return f'<NotaFiscal {self.numero_nf}>'
+
+
+class ItemNotaFiscal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(200), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    preco_unitario = db.Column(db.Float, nullable=False)
+    nota_fiscal_id = db.Column(db.Integer, db.ForeignKey('nota_fiscal.id'), nullable=False)
+
+    nota_fiscal = db.relationship('NotaFiscal', backref=db.backref('itens', lazy=True))
+
+    def __repr__(self):
+        return f'<ItemNotaFiscal {self.descricao}>'
 
 
 class LogMovimentacao(db.Model):
@@ -59,11 +85,13 @@ class LogMovimentacao(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
     acao = db.Column(db.String(100), nullable=False)
     mercadoria_id = db.Column(db.Integer, db.ForeignKey("mercadoria.id"), nullable=True)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey("fornecedor.id"), nullable=True)
     descricao = db.Column(db.String(200), nullable=False)
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
 
     usuario = db.relationship("Usuario", backref=db.backref("logs", lazy=True))
     mercadoria = db.relationship("Mercadoria", backref=db.backref("logs", lazy=True))
+    fornecedor = db.relationship("Fornecedor", backref=db.backref("logs", lazy=True))
 
 
 # Inicializando o banco de dados
@@ -82,11 +110,12 @@ def login_required(f):
     return decorated_function
 
 
-def registrar_log(acao, descricao, mercadoria_id=None):
+def registrar_log(acao, descricao, mercadoria_id=None, fornecedor_id=None):
     log = LogMovimentacao(
         usuario_id=session.get("user_id"),
         acao=acao,
         mercadoria_id=mercadoria_id,
+        fornecedor_id=fornecedor_id,
         descricao=descricao,
     )
     db.session.add(log)
@@ -124,7 +153,7 @@ def adicionar():
         registrar_log(
             "Inserção",
             f"Mercadoria '{nova_mercadoria.nome}' adicionada com quantidade {quantidade}.",
-            nova_mercadoria.id,
+            mercadoria_id=nova_mercadoria.id,
         )
         flash("Mercadoria adicionada com sucesso!", "success")
         return redirect(url_for("index"))
@@ -145,7 +174,7 @@ def editar(id):
         registrar_log(
             "Edição",
             f"Mercadoria '{mercadoria.nome}' editada. Quantidade: {mercadoria.quantidade}.",
-            mercadoria.id,
+            mercadoria_id=mercadoria.id,
         )
         flash("Mercadoria editada com sucesso!", "success")
         return redirect(url_for("index"))
@@ -160,7 +189,7 @@ def excluir(id):
     db.session.delete(mercadoria)
     db.session.commit()
     registrar_log(
-        "Exclusão", f"Mercadoria '{mercadoria.nome}' excluída.", mercadoria.id
+        "Exclusão", f"Mercadoria '{mercadoria.nome}' excluída.", mercadoria_id=mercadoria.id
     )
     flash("Mercadoria excluída com sucesso!", "success")
     return redirect(url_for("index"))
@@ -194,53 +223,139 @@ def movimentacoes():
 @app.route("/fornecedores", methods=["GET", "POST"])
 @login_required
 def gerenciar_fornecedores():
-    fornecedor_id = request.args.get("fornecedor_id")
+    fornecedor_id = request.args.get('fornecedor_id')
     fornecedor = Fornecedor.query.get(fornecedor_id) if fornecedor_id else None
 
-    if request.method == "POST":
-        if fornecedor:  # Editando fornecedor
-            fornecedor.cnpj = request.form["cnpj"]
-            fornecedor.nome = request.form["nome"]
-            fornecedor.endereco = request.form["endereco"]
-            fornecedor.telefone = request.form["telefone"]
-            fornecedor.email = request.form["email"]
-            db.session.commit()
-            flash("Fornecedor editado com sucesso!", "success")
-        else:  # Novo fornecedor
-            cnpj = request.form["cnpj"]
-            nome = request.form["nome"]
-            endereco = request.form["endereco"]
-            telefone = request.form["telefone"]
-            email = request.form["email"]
+    if request.method == 'POST':
+        cnpj = request.form['cnpj']
+        nome = request.form['nome']
+        endereco = request.form['endereco']
+        telefone = request.form['telefone']
+        email = request.form['email']
 
+        if fornecedor:  # Editando fornecedor
+            fornecedor_existente = Fornecedor.query.filter(
+                Fornecedor.cnpj == cnpj, 
+                Fornecedor.id != fornecedor.id
+            ).first()
+            if fornecedor_existente:
+                flash('Já existe um fornecedor com esse CNPJ!', 'error')
+                return redirect(url_for('gerenciar_fornecedores', fornecedor_id=fornecedor.id))
+
+            fornecedor.cnpj = cnpj
+            fornecedor.nome = nome
+            fornecedor.endereco = endereco
+            fornecedor.telefone = telefone
+            fornecedor.email = email
+            db.session.commit()
+            registrar_log(
+                "Edição Fornecedor",
+                f"Fornecedor '{fornecedor.nome}' editado.",
+                fornecedor_id=fornecedor.id,
+            )
+            flash('Fornecedor editado com sucesso!', 'success')
+        else:  # Novo fornecedor
             fornecedor_existente = Fornecedor.query.filter_by(cnpj=cnpj).first()
             if fornecedor_existente:
-                flash("Já existe um fornecedor com esse CNPJ!", "error")
-                return redirect(url_for("gerenciar_fornecedores"))
+                flash('Já existe um fornecedor com esse CNPJ!', 'error')
+                return redirect(url_for('gerenciar_fornecedores'))
 
             novo_fornecedor = Fornecedor(
-                cnpj=cnpj, nome=nome, endereco=endereco, telefone=telefone, email=email
+                cnpj=cnpj, 
+                nome=nome, 
+                endereco=endereco, 
+                telefone=telefone, 
+                email=email
             )
             db.session.add(novo_fornecedor)
             db.session.commit()
-            flash("Fornecedor adicionado com sucesso!", "success")
+            registrar_log(
+                "Inserção Fornecedor",
+                f"Fornecedor '{novo_fornecedor.nome}' adicionado.",
+                fornecedor_id=novo_fornecedor.id,
+            )
+            flash('Fornecedor adicionado com sucesso!', 'success')
 
-        return redirect(url_for("gerenciar_fornecedores"))
+        return redirect(url_for('gerenciar_fornecedores'))
 
     fornecedores = Fornecedor.query.all()
-    return render_template(
-        "fornecedor.html", fornecedores=fornecedores, fornecedor=fornecedor
-    )
+    return render_template('fornecedor.html', fornecedores=fornecedores, fornecedor=fornecedor)
 
 
-@app.route("/excluir_fornecedor/<int:id>")
+@app.route('/excluir_fornecedor/<int:id>')
 @login_required
 def excluir_fornecedor(id):
     fornecedor = Fornecedor.query.get_or_404(id)
     db.session.delete(fornecedor)
     db.session.commit()
-    flash("Fornecedor excluído com sucesso!", "success")
-    return redirect(url_for("gerenciar_fornecedores"))
+    registrar_log(
+        "Exclusão Fornecedor",
+        f"Fornecedor '{fornecedor.nome}' excluído.",
+        fornecedor_id=fornecedor.id,
+    )
+    flash('Fornecedor excluído com sucesso!', 'success')
+    return redirect(url_for('gerenciar_fornecedores'))
+
+
+@app.route("/fornecedores/<int:fornecedor_id>/nova_nf", methods=["GET", "POST"])
+@login_required
+def criar_nota_fiscal(fornecedor_id):
+    fornecedor = Fornecedor.query.get_or_404(fornecedor_id)
+
+    if request.method == "POST":
+        numero_nf = request.form['numero_nf']
+        data_emissao = request.form['data_emissao']
+        data_entrega = request.form['data_entrega']
+
+        # Verificar duplicidade de número de NF
+        nota_existente = NotaFiscal.query.filter_by(numero_nf=numero_nf).first()
+        if nota_existente:
+            flash('Já existe uma Nota Fiscal com esse número!', 'error')
+            return redirect(url_for('criar_nota_fiscal', fornecedor_id=fornecedor_id))
+
+        nova_nf = NotaFiscal(
+            numero_nf=numero_nf,
+            data_emissao=datetime.strptime(data_emissao, "%Y-%m-%d").date(),
+            data_entrega=datetime.strptime(data_entrega, "%Y-%m-%d").date(),
+            fornecedor_id=fornecedor.id
+        )
+        db.session.add(nova_nf)
+        db.session.commit()
+        flash('Nota Fiscal criada com sucesso!', 'success')
+        return redirect(url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id))
+
+    return render_template("nova_nf.html", fornecedor=fornecedor)
+
+
+@app.route("/fornecedores/<int:fornecedor_id>/nfs")
+@login_required
+def listar_notas_fiscais(fornecedor_id):
+    fornecedor = Fornecedor.query.get_or_404(fornecedor_id)
+    notas_fiscais = NotaFiscal.query.filter_by(fornecedor_id=fornecedor.id).all()
+    return render_template("listar_nfs.html", fornecedor=fornecedor, notas_fiscais=notas_fiscais)
+
+
+@app.route("/nota_fiscal/<int:nf_id>", methods=["GET", "POST"])
+@login_required
+def detalhar_nota_fiscal(nf_id):
+    nota_fiscal = NotaFiscal.query.get_or_404(nf_id)
+
+    if request.method == "POST":
+        descricao = request.form['descricao']
+        quantidade = int(request.form['quantidade'])
+        preco_unitario = float(request.form['preco_unitario'])
+
+        novo_item = ItemNotaFiscal(
+            descricao=descricao,
+            quantidade=quantidade,
+            preco_unitario=preco_unitario,
+            nota_fiscal_id=nota_fiscal.id
+        )
+        db.session.add(novo_item)
+        db.session.commit()
+        flash('Item adicionado à Nota Fiscal com sucesso!', 'success')
+
+    return render_template("detalhar_nf.html", nota_fiscal=nota_fiscal)
 
 
 @app.route("/login", methods=["GET", "POST"])

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <title>Notas Fiscais do Fornecedor</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container mt-4">
+      <h1 class="mb-4">
+        Notas Fiscais para o Fornecedor {{ fornecedor.nome }}
+      </h1>
+
+      <div class="card">
+        <div class="card-body">
+          <h2>Lista de Notas Fiscais</h2>
+          <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+              <tr>
+                <th>ID</th>
+                <th>Número da NF</th>
+                <th>Data de Emissão</th>
+                <th>Data de Entrega</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for nf in notas_fiscais %}
+              <tr>
+                <td>{{ nf.id }}</td>
+                <td>{{ nf.numero_nf }}</td>
+                <td>{{ nf.data_emissao.strftime('%d/%m/%Y') }}</td>
+                <td>{{ nf.data_entrega.strftime('%d/%m/%Y') }}</td>
+                <td>
+                  <a
+                    href="{{ url_for('detalhar_nota_fiscal', nf_id=nf.id) }}"
+                    class="btn btn-info btn-sm"
+                    >Ver Itens</a
+                  >
+                  <a
+                    href="{{ url_for('editar_nota_fiscal', nf_id=nf.id) }}"
+                    class="btn btn-warning btn-sm"
+                    >Editar</a
+                  >
+                  <a
+                    href="{{ url_for('excluir_nota_fiscal', nf_id=nf.id) }}"
+                    class="btn btn-danger btn-sm"
+                    >Excluir</a
+                  >
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center">
+                  Nenhuma Nota Fiscal cadastrada para este fornecedor.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <a
+        href="{{ url_for('gerenciar_fornecedores') }}"
+        class="btn btn-secondary mt-4"
+        >Voltar aos Fornecedores</a
+      >
+    </div>
+  </body>
+</html>

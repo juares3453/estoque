@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <title>Nova Nota Fiscal</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container mt-4">
+      <h1 class="mb-4">Nova Nota Fiscal para {{ fornecedor.nome }}</h1>
+
+      <form method="POST">
+        <div class="form-group">
+          <label for="numero_nf">Número da NF:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="numero_nf"
+            name="numero_nf"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="data_emissao">Data de Emissão:</label>
+          <input
+            type="date"
+            class="form-control"
+            id="data_emissao"
+            name="data_emissao"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="data_entrega">Data de Entrega:</label>
+          <input
+            type="date"
+            class="form-control"
+            id="data_entrega"
+            name="data_entrega"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-success">Criar Nota Fiscal</button>
+        <a
+          href="{{ url_for('gerenciar_fornecedores') }}"
+          class="btn btn-secondary"
+          >Cancelar</a
+        >
+      </form>
+    </div>
+  </body>
+</html>
