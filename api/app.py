@@ -208,13 +208,29 @@ def editar(id):
 @app.route("/excluir/<int:id>")
 @login_required
 def excluir(id):
-    mercadoria = Mercadoria.query.get_or_404(id)
-    db.session.delete(mercadoria)
-    db.session.commit()
-    registrar_log(
-        "Exclusão", f"Mercadoria '{mercadoria.nome}' excluída.", mercadoria_id=mercadoria.id
-    )
-    flash("Mercadoria excluída com sucesso!", "success")
+    # Tenta buscar a mercadoria antes de excluí-la
+    mercadoria = Mercadoria.query.get(id)
+    
+    if not mercadoria:
+        flash("Mercadoria não encontrada.", "error")
+        return redirect(url_for("index"))
+
+    try:
+        # Registrar o log antes de excluir a mercadoria
+        registrar_log(
+            acao="Exclusão",
+            descricao=f"Mercadoria '{mercadoria.nome}' excluída.",
+            mercadoria_id=mercadoria.id
+        )
+
+        # Agora exclui a mercadoria
+        db.session.delete(mercadoria)
+        db.session.commit()
+        flash("Mercadoria excluída com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erro ao excluir mercadoria: {str(e)}", "error")
+    
     return redirect(url_for("index"))
 
 
@@ -308,15 +324,29 @@ def gerenciar_fornecedores():
 @app.route('/excluir_fornecedor/<int:id>')
 @login_required
 def excluir_fornecedor(id):
-    fornecedor = Fornecedor.query.get_or_404(id)
-    db.session.delete(fornecedor)
-    db.session.commit()
-    registrar_log(
-        "Exclusão Fornecedor",
-        f"Fornecedor '{fornecedor.nome}' excluído.",
-        fornecedor_id=fornecedor.id,
-    )
-    flash('Fornecedor excluído com sucesso!', 'success')
+    # Tenta buscar o fornecedor antes de excluí-lo
+    fornecedor = Fornecedor.query.get(id)
+    
+    if not fornecedor:
+        flash("Fornecedor não encontrado.", "error")
+        return redirect(url_for('gerenciar_fornecedores'))
+
+    try:
+        # Registrar o log antes de excluir o fornecedor
+        registrar_log(
+            acao="Exclusão Fornecedor",
+            descricao=f"Fornecedor '{fornecedor.nome}' excluído.",
+            fornecedor_id=fornecedor.id
+        )
+
+        # Agora exclui o fornecedor
+        db.session.delete(fornecedor)
+        db.session.commit()
+        flash('Fornecedor excluído com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erro ao excluir fornecedor: {str(e)}", "error")
+    
     return redirect(url_for('gerenciar_fornecedores'))
 
 
