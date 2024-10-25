@@ -12,10 +12,16 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///estoque.db"
+# Configurando o SQLAlchemy para PostgreSQL
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = "chave-secreta"  # Para utilizar mensagens flash
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
@@ -94,9 +100,26 @@ class LogMovimentacao(db.Model):
     fornecedor = db.relationship("Fornecedor", backref=db.backref("logs", lazy=True))
 
 
-# Inicializando o banco de dados
+# Função para criar um usuário inicial
+def criar_usuario_inicial():
+    """
+    Cria um usuário inicial se nenhum usuário existir no banco de dados.
+    """
+    if Usuario.query.first() is None:
+        username = "admin"
+        password = "admin123"  # Altere esta senha para uma senha forte
+
+        novo_usuario = Usuario(username=username)
+        novo_usuario.set_password(password)
+        db.session.add(novo_usuario)
+        db.session.commit()
+        print("Usuário inicial criado: Nome de Usuário='admin', Senha='admin123' (Por favor, altere esta senha imediatamente!)")
+
+
+# Inicializando o banco de dados e criando um usuário inicial, se necessário
 with app.app_context():
     db.create_all()
+    criar_usuario_inicial()
 
 
 def login_required(f):
