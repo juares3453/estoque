@@ -324,15 +324,19 @@ def gerenciar_fornecedores():
 @app.route('/excluir_fornecedor/<int:id>')
 @login_required
 def excluir_fornecedor(id):
-    # Tenta buscar o fornecedor antes de excluí-lo
     fornecedor = Fornecedor.query.get(id)
     
     if not fornecedor:
         flash("Fornecedor não encontrado.", "error")
         return redirect(url_for('gerenciar_fornecedores'))
 
+    # Verificar se existem notas fiscais associadas
+    notas_associadas = NotaFiscal.query.filter_by(fornecedor_id=fornecedor.id).all()
+    if notas_associadas:
+        flash("Não é possível excluir o fornecedor, pois existem notas fiscais associadas.", "error")
+        return redirect(url_for('gerenciar_fornecedores'))
+
     try:
-        # Registrar o log antes de excluir o fornecedor
         registrar_log(
             acao="Exclusão Fornecedor",
             descricao=f"Fornecedor '{fornecedor.nome}' excluído.",
@@ -360,25 +364,37 @@ def criar_nota_fiscal(fornecedor_id):
         data_emissao = request.form['data_emissao']
         data_entrega = request.form['data_entrega']
 
-        # Verificar duplicidade de número de NF
-        nota_existente = NotaFiscal.query.filter_by(numero_nf=numero_nf).first()
-        if nota_existente:
-            flash('Já existe uma Nota Fiscal com esse número!', 'error')
-            return redirect(url_for('criar_nota_fiscal', fornecedor_id=fornecedor_id))
+        # Validação básica para garantir que todos os campos foram preenchidos
+        if not numero_nf or not data_emissao or not data_entrega:
+            flash("Todos os campos são obrigatórios!", "error")
+            return redirect(url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id))
 
-        nova_nf = NotaFiscal(
-            numero_nf=numero_nf,
-            data_emissao=datetime.strptime(data_emissao, "%Y-%m-%d").date(),
-            data_entrega=datetime.strptime(data_entrega, "%Y-%m-%d").date(),
-            fornecedor_id=fornecedor.id
-        )
-        db.session.add(nova_nf)
-        db.session.commit()
-        flash('Nota Fiscal criada com sucesso!', 'success')
-        return redirect(url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id))
+        try:
+            # Verificar se já existe uma NF com o mesmo número
+            nota_existente = NotaFiscal.query.filter_by(numero_nf=numero_nf).first()
+            if nota_existente:
+                flash('Já existe uma Nota Fiscal com esse número!', 'error')
+                return redirect(url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id))
+
+            # Criar a nova Nota Fiscal
+            nova_nf = NotaFiscal(
+                numero_nf=numero_nf,
+                data_emissao=datetime.strptime(data_emissao, "%Y-%m-%d").date(),
+                data_entrega=datetime.strptime(data_entrega, "%Y-%m-%d").date(),
+                fornecedor_id=fornecedor.id
+            )
+
+            db.session.add(nova_nf)
+            db.session.commit()
+            flash('Nota Fiscal criada com sucesso!', 'success')
+            return redirect(url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Erro ao criar Nota Fiscal: {str(e)}", "error")
+            return redirect(url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id))
 
     return render_template("nova_nf.html", fornecedor=fornecedor)
-
 
 @app.route("/fornecedores/<int:fornecedor_id>/nfs")
 @login_required
@@ -386,7 +402,6 @@ def listar_notas_fiscais(fornecedor_id):
     fornecedor = Fornecedor.query.get_or_404(fornecedor_id)
     notas_fiscais = NotaFiscal.query.filter_by(fornecedor_id=fornecedor.id).all()
     return render_template("listar_nfs.html", fornecedor=fornecedor, notas_fiscais=notas_fiscais)
-
 
 @app.route("/nota_fiscal/<int:nf_id>", methods=["GET", "POST"])
 @login_required
@@ -409,6 +424,38 @@ def detalhar_nota_fiscal(nf_id):
         flash('Item adicionado à Nota Fiscal com sucesso!', 'success')
 
     return render_template("detalhar_nf.html", nota_fiscal=nota_fiscal)
+
+
+@app.route("/nota_fiscal/<int:nf_id>/editar", methods=["GET", "POST"])
+@login_required
+def editar_nota_fiscal(nf_id):
+    nota_fiscal = NotaFiscal.query.get_or_404(nf_id)
+
+    if request.method == "POST":
+        # Lógica de edição da Nota Fiscal
+        nota_fiscal.numero_nf = request.form["numero_nf"]
+        nota_fiscal.data_emissao = request.form["data_emissao"]
+        nota_fiscal.data_entrega = request.form["data_entrega"]
+        db.session.commit()
+        flash("Nota Fiscal editada com sucesso!", "success")
+        return redirect(url_for("listar_notas_fiscais", fornecedor_id=nota_fiscal.fornecedor_id))
+
+    return render_template("editar_nf.html", nota_fiscal=nota_fiscal)
+
+
+@app.route("/nota_fiscal/<int:nf_id>/excluir", methods=["POST"])
+@login_required
+def excluir_nota_fiscal(nf_id):
+    nota_fiscal = NotaFiscal.query.get_or_404(nf_id)
+    try:
+        db.session.delete(nota_fiscal)
+        db.session.commit()
+        flash("Nota Fiscal excluída com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erro ao excluir Nota Fiscal: {str(e)}", "error")
+
+    return redirect(url_for("listar_notas_fiscais", fornecedor_id=nota_fiscal.fornecedor_id))
 
 
 @app.route("/login", methods=["GET", "POST"])

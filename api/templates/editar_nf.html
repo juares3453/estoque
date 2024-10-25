@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Nova Nota Fiscal</title>
+    <title>Editar Nota Fiscal</title>
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
@@ -10,10 +10,10 @@
   </head>
   <body>
     <div class="container mt-4">
-      <h2>Criar Nova Nota Fiscal para o Fornecedor: {{ fornecedor.nome }}</h2>
+      <h2>Editar Nota Fiscal</h2>
 
       <form
-        action="{{ url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id) }}"
+        action="{{ url_for('editar_nota_fiscal', nf_id=nota_fiscal.id) }}"
         method="post"
       >
         <div class="form-group">
@@ -23,6 +23,7 @@
             id="numero_nf"
             name="numero_nf"
             class="form-control"
+            value="{{ nota_fiscal.numero_nf }}"
             required
           />
         </div>
@@ -34,6 +35,7 @@
             id="data_emissao"
             name="data_emissao"
             class="form-control"
+            value="{{ nota_fiscal.data_emissao }}"
             required
           />
         </div>
@@ -45,15 +47,14 @@
             id="data_entrega"
             name="data_entrega"
             class="form-control"
+            value="{{ nota_fiscal.data_entrega }}"
             required
           />
         </div>
 
-        <button type="submit" class="btn btn-primary">
-          Adicionar Nota Fiscal
-        </button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         <a
-          href="{{ url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id) }}"
+          href="{{ url_for('listar_notas_fiscais', fornecedor_id=nota_fiscal.fornecedor_id) }}"
           class="btn btn-secondary"
           >Voltar para Notas Fiscais</a
         >
