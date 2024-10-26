@@ -36,6 +36,12 @@
             <td>{{ nf.data_entrega }}</td>
             <td>
               <a
+                href="{{ url_for('detalhar_nota_fiscal', nf_id=nf.id) }}"
+                class="btn btn-info btn-sm"
+                >Detalhar</a
+              >
+
+              <a
                 href="{{ url_for('editar_nota_fiscal', nf_id=nf.id) }}"
                 class="btn btn-warning btn-sm"
                 >Editar</a

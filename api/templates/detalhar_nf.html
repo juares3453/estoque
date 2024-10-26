@@ -1,91 +1,116 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <title>Detalhes da Nota Fiscal</title>
     <link
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
   </head>
-  <body class="bg-light">
+  <body>
     <div class="container mt-4">
-      <h1 class="mb-4">Nota Fiscal {{ nota_fiscal.numero_nf }}</h1>
+      <h2>Detalhes da Nota Fiscal: {{ nota_fiscal.numero_nf }}</h2>
+      <br />
 
-      <div class="card mb-4">
-        <div class="card-body">
-          <h2>Adicionar Item</h2>
-          <form method="POST">
-            <div class="form-group">
-              <label for="descricao">Descrição do Item:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="descricao"
-                name="descricao"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="quantidade">Quantidade:</label>
-              <input
-                type="number"
-                class="form-control"
-                id="quantidade"
-                name="quantidade"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="preco_unitario">Preço Unitário:</label>
-              <input
-                type="number"
-                step="0.01"
-                class="form-control"
-                id="preco_unitario"
-                name="preco_unitario"
-                required
-              />
-            </div>
-            <button type="submit" class="btn btn-success">
-              Adicionar Item
-            </button>
-          </form>
-        </div>
-      </div>
+      <h3>Itens da Nota Fiscal</h3>
 
-      <div class="card">
-        <div class="card-body">
-          <h2>Itens na Nota Fiscal</h2>
-          <table class="table table-bordered table-striped">
-            <thead class="thead-dark">
-              <tr>
-                <th>ID</th>
-                <th>Descrição</th>
-                <th>Quantidade</th>
-                <th>Preço Unitário</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in nota_fiscal.itens %}
-              <tr>
-                <td>{{ item.id }}</td>
-                <td>{{ item.descricao }}</td>
-                <td>{{ item.quantidade }}</td>
-                <td>R$ {{ item.preco_unitario }}</td>
-                <td>R$ {{ item.quantidade * item.preco_unitario }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {% if nota_fiscal.itens %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th>Quantidade</th>
+            <th>Preço Unitário</th>
+            <th>Preço Total</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in nota_fiscal.itens %}
+          <tr>
+            <td>{{ item.descricao }}</td>
+            <td>{{ item.quantidade }}</td>
+            <td>{{ item.preco_unitario }}</td>
+            <td>{{ item.quantidade * item.preco_unitario }}</td>
+            <td>
+              <a
+                href="{{ url_for('editar_item_nf', nf_id=nota_fiscal.id, item_id=item.id) }}"
+                class="btn btn-warning btn-sm"
+                >Editar</a
+              >
 
-      <a
-        href="{{ url_for('gerenciar_fornecedores') }}"
-        class="btn btn-secondary mt-4"
-        >Voltar aos Fornecedores</a
+              <form
+                action="{{ url_for('excluir_item_nf', nf_id=nota_fiscal.id, item_id=item.id) }}"
+                method="post"
+                style="display: inline"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-danger btn-sm"
+                  onclick="return confirm('Tem certeza que deseja excluir este item?');"
+                >
+                  Excluir
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>Nenhum item encontrado para esta Nota Fiscal.</p>
+      {% endif %}
+      <br />
+      <h3>Adicionar Novo Item</h3>
+      <form
+        action="{{ url_for('detalhar_nota_fiscal', nf_id=nota_fiscal.id) }}"
+        method="post"
       >
+        <div class="form-group">
+          <label for="descricao">Descrição do Item:</label>
+          <input
+            type="text"
+            id="descricao"
+            name="descricao"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="quantidade">Quantidade:</label>
+          <input
+            type="number"
+            id="quantidade"
+            name="quantidade"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="preco_unitario">Preço Unitário:</label>
+          <input
+            type="number"
+            step="0.01"
+            id="preco_unitario"
+            name="preco_unitario"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Adicionar Item</button>
+      </form>
+
+      <div class="mt-4">
+        <a
+          href="{{ url_for('listar_notas_fiscais', fornecedor_id=nota_fiscal.fornecedor_id) }}"
+          class="btn btn-secondary"
+          >Voltar para Notas Fiscais</a
+        >
+      </div>
     </div>
   </body>
 </html>

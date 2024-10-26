@@ -457,6 +457,41 @@ def excluir_nota_fiscal(nf_id):
 
     return redirect(url_for("listar_notas_fiscais", fornecedor_id=nota_fiscal.fornecedor_id))
 
+@app.route("/nota_fiscal/<int:nf_id>/item/<int:item_id>/editar", methods=["GET", "POST"])
+@login_required
+def editar_item_nf(nf_id, item_id):
+    nota_fiscal = NotaFiscal.query.get_or_404(nf_id)
+    item = ItemNotaFiscal.query.get_or_404(item_id)
+
+    if request.method == "POST":
+        item.descricao = request.form['descricao']
+        item.quantidade = int(request.form['quantidade'])
+        item.preco_unitario = float(request.form['preco_unitario'])
+
+        try:
+            db.session.commit()
+            flash('Item da Nota Fiscal editado com sucesso!', 'success')
+            return redirect(url_for('detalhar_nota_fiscal', nf_id=nota_fiscal.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Erro ao editar item: {str(e)}", "error")
+            return redirect(url_for('editar_item_nf', nf_id=nota_fiscal.id, item_id=item.id))
+
+    return render_template("editar_item_nf.html", nota_fiscal=nota_fiscal, item=item)
+
+@app.route("/nota_fiscal/<int:nf_id>/item/<int:item_id>/excluir", methods=["POST"])
+@login_required
+def excluir_item_nf(nf_id, item_id):
+    item = ItemNotaFiscal.query.get_or_404(item_id)
+    try:
+        db.session.delete(item)
+        db.session.commit()
+        flash('Item da Nota Fiscal excluído com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erro ao excluir item: {str(e)}", "error")
+    return redirect(url_for('detalhar_nota_fiscal', nf_id=nf_id))
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
