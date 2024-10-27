@@ -12,7 +12,6 @@
     <div class="container mt-4">
       <h2>Detalhes da Nota Fiscal: {{ nota_fiscal.numero_nf }}</h2>
       <br />
-
       <h3>Itens da Nota Fiscal</h3>
 
       {% if nota_fiscal.itens %}
@@ -22,6 +21,7 @@
             <th>Descrição</th>
             <th>Quantidade</th>
             <th>Preço Unitário</th>
+            <th>Grupo</th>
             <th>Preço Total</th>
             <th>Ações</th>
           </tr>
@@ -32,6 +32,8 @@
             <td>{{ item.descricao }}</td>
             <td>{{ item.quantidade }}</td>
             <td>{{ item.preco_unitario }}</td>
+            <td>{{ item.grupo }}</td>
+            <!-- Nova célula adicionada -->
             <td>{{ item.quantidade * item.preco_unitario }}</td>
             <td>
               <a
@@ -101,6 +103,16 @@
           />
         </div>
 
+        <div class="form-group">
+          <label for="grupo">Grupo:</label>
+          <select id="grupo" name="grupo" class="form-control" required>
+            <option value="Cirurgia">Cirurgia</option>
+            <option value="Prótese">Prótese</option>
+            <option value="Material Básico">Material Básico</option>
+            <option value="Descartável">Descartável</option>
+          </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">Adicionar Item</button>
       </form>
 
@@ -111,6 +123,7 @@
           >Voltar para Notas Fiscais</a
         >
       </div>
+      <br />
     </div>
   </body>
 </html>

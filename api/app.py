@@ -78,6 +78,7 @@ class ItemNotaFiscal(db.Model):
     descricao = db.Column(db.String(200), nullable=False)
     quantidade = db.Column(db.Integer, nullable=False)
     preco_unitario = db.Column(db.Float, nullable=False)
+    grupo = db.Column(db.String(50), nullable=True)  # Adicionando a coluna grupo
     nota_fiscal_id = db.Column(db.Integer, db.ForeignKey('nota_fiscal.id'), nullable=False)
 
     nota_fiscal = db.relationship('NotaFiscal', backref=db.backref('itens', lazy=True))
@@ -412,18 +413,25 @@ def detalhar_nota_fiscal(nf_id):
         descricao = request.form['descricao']
         quantidade = int(request.form['quantidade'])
         preco_unitario = float(request.form['preco_unitario'])
+        grupo = request.form['grupo']  # Novo campo do grupo
 
         novo_item = ItemNotaFiscal(
             descricao=descricao,
             quantidade=quantidade,
             preco_unitario=preco_unitario,
+            grupo=grupo,  # Armazena o grupo selecionado
             nota_fiscal_id=nota_fiscal.id
         )
-        db.session.add(novo_item)
-        db.session.commit()
-        flash('Item adicionado à Nota Fiscal com sucesso!', 'success')
+        try:
+            db.session.add(novo_item)
+            db.session.commit()
+            flash('Item adicionado com sucesso!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Erro ao adicionar item: {str(e)}", "error")
 
     return render_template("detalhar_nf.html", nota_fiscal=nota_fiscal)
+
 
 
 @app.route("/nota_fiscal/<int:nf_id>/editar", methods=["GET", "POST"])
