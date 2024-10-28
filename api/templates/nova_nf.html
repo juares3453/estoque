@@ -1,63 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
     <title>Nova Nota Fiscal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
   </head>
-  <body>
+  <body class="bg-light">
     <div class="container mt-4">
-      <h2>Criar Nova Nota Fiscal para o Fornecedor: {{ fornecedor.nome }}</h2>
+      <h2 class="text-center mb-4">
+        Criar Nova Nota Fiscal para o Fornecedor: {{ fornecedor.nome }}
+      </h2>
 
-      <form
-        action="{{ url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id) }}"
-        method="post"
-      >
-        <div class="form-group">
-          <label for="numero_nf">Número da Nota Fiscal:</label>
-          <input
-            type="text"
-            id="numero_nf"
-            name="numero_nf"
-            class="form-control"
-            required
-          />
+      <div class="card">
+        <div class="card-body">
+          <form
+            action="{{ url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id) }}"
+            method="post"
+          >
+            <div class="form-group">
+              <label for="numero_nf">Número da Nota Fiscal:</label>
+              <input
+                type="text"
+                id="numero_nf"
+                name="numero_nf"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="data_emissao">Data de Emissão:</label>
+              <input
+                type="date"
+                id="data_emissao"
+                name="data_emissao"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="data_entrega">Data de Entrega:</label>
+              <input
+                type="date"
+                id="data_entrega"
+                name="data_entrega"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button type="submit" class="btn btn-primary">
+                Adicionar Nota Fiscal
+              </button>
+              <a
+                href="{{ url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id) }}"
+                class="btn btn-secondary"
+                >Voltar para Notas Fiscais</a
+              >
+            </div>
+          </form>
         </div>
-
-        <div class="form-group">
-          <label for="data_emissao">Data de Emissão:</label>
-          <input
-            type="date"
-            id="data_emissao"
-            name="data_emissao"
-            class="form-control"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="data_entrega">Data de Entrega:</label>
-          <input
-            type="date"
-            id="data_entrega"
-            name="data_entrega"
-            class="form-control"
-            required
-          />
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-          Adicionar Nota Fiscal
-        </button>
-        <a
-          href="{{ url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id) }}"
-          class="btn btn-secondary"
-          >Voltar para Notas Fiscais</a
-        >
-      </form>
+      </div>
     </div>
   </body>
 </html>

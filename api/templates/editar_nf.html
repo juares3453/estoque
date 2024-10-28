@@ -3,18 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <title>Editar Nota Fiscal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
   </head>
-  <body>
+  <body class="bg-light">
     <div class="container mt-4">
-      <h2>Editar Nota Fiscal</h2>
+      <h2 class="text-center">Editar Nota Fiscal</h2>
 
       <form
         action="{{ url_for('editar_nota_fiscal', nf_id=nota_fiscal.id) }}"
         method="post"
+        class="mt-4"
       >
         <div class="form-group">
           <label for="numero_nf">Número da Nota Fiscal:</label>
@@ -52,13 +54,21 @@
           />
         </div>
 
-        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-        <a
-          href="{{ url_for('listar_notas_fiscais', fornecedor_id=nota_fiscal.fornecedor_id) }}"
-          class="btn btn-secondary"
-          >Voltar para Notas Fiscais</a
-        >
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary">
+            Salvar Alterações
+          </button>
+          <a
+            href="{{ url_for('listar_notas_fiscais', fornecedor_id=nota_fiscal.fornecedor_id) }}"
+            class="btn btn-secondary ml-2"
+            >Voltar para Notas Fiscais</a
+          >
+        </div>
       </form>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>

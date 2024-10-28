@@ -2,42 +2,55 @@
 <html lang="pt-br">
   <head>
     <title>Registro de Movimentações</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <style>
+      @media (max-width: 768px) {
+        .table-responsive td {
+          white-space: normal;
+        }
+      }
+    </style>
   </head>
   <body class="bg-light">
     <div class="container mt-4">
-      <h1>Registro de Movimentações</h1>
-      <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-          <tr>
-            <th>ID</th>
-            <th>Usuário</th>
-            <th>Ação</th>
-            <th>Descrição</th>
-            <th>Data e Hora</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for log in logs %}
-          <tr>
-            <td>{{ log.id }}</td>
-            <td>{{ log.usuario.username if log.usuario else 'N/A' }}</td>
-            <td>{{ log.acao }}</td>
-            <td>
-              {{ log.descricao }} {% if log.mercadoria %} (Mercadoria: {{
-              log.mercadoria.nome }}) {% elif log.fornecedor %} (Fornecedor: {{
-              log.fornecedor.nome }}) {% endif %}
-            </td>
-            <td>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <a href="/" class="btn btn-secondary">Voltar</a>
+      <h1 class="text-center mb-4">Registro de Movimentações</h1>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+          <thead class="thead-dark">
+            <tr>
+              <th>ID</th>
+              <th>Usuário</th>
+              <th>Ação</th>
+              <th>Descrição</th>
+              <th>Data e Hora</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.id }}</td>
+              <td>{{ log.usuario.username if log.usuario else 'N/A' }}</td>
+              <td>{{ log.acao }}</td>
+              <td>
+                {{ log.descricao }} {% if log.mercadoria %} (Mercadoria: {{
+                log.mercadoria.nome }}) {% elif log.fornecedor %} (Fornecedor:
+                {{ log.fornecedor.nome }}) {% endif %}
+              </td>
+              <td>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-center mt-4">
+        <a href="/" class="btn btn-secondary">Voltar</a>
+      </div>
     </div>
-    <br />
   </body>
 </html>

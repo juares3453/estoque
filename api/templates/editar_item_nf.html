@@ -3,18 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <title>Editar Item da Nota Fiscal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
   </head>
-  <body>
+  <body class="bg-light">
     <div class="container mt-4">
-      <h2>Editar Item da Nota Fiscal: {{ nota_fiscal.numero_nf }}</h2>
+      <h2 class="text-center">Editar Item da Nota Fiscal: {{ nota_fiscal.numero_nf }}</h2>
 
       <form
         action="{{ url_for('editar_item_nf', nf_id=nota_fiscal.id, item_id=item.id) }}"
         method="post"
+        class="mt-4"
       >
         <div class="form-group">
           <label for="descricao">Descrição do Item:</label>
@@ -56,20 +58,26 @@
         <div class="form-group">
           <label for="grupo">Grupo:</label>
           <select id="grupo" name="grupo" class="form-control" required>
-            <option value="Cirurgia">Cirurgia</option>
-            <option value="Prótese">Prótese</option>
-            <option value="Material Básico">Material Básico</option>
-            <option value="Descartável">Descartável</option>
+            <option value="Cirurgia" {% if item.grupo == 'Cirurgia' %} selected {% endif %}>Cirurgia</option>
+            <option value="Prótese" {% if item.grupo == 'Prótese' %} selected {% endif %}>Prótese</option>
+            <option value="Material Básico" {% if item.grupo == 'Material Básico' %} selected {% endif %}>Material Básico</option>
+            <option value="Descartável" {% if item.grupo == 'Descartável' %} selected {% endif %}>Descartável</option>
           </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-        <a
-          href="{{ url_for('detalhar_nota_fiscal', nf_id=nota_fiscal.id) }}"
-          class="btn btn-secondary"
-          >Cancelar</a
-        >
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          <a
+            href="{{ url_for('detalhar_nota_fiscal', nf_id=nota_fiscal.id) }}"
+            class="btn btn-secondary ml-2"
+            >Cancelar</a
+          >
+        </div>
       </form>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>

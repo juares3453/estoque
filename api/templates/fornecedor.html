@@ -2,14 +2,22 @@
 <html lang="pt-br">
   <head>
     <title>Gerenciamento de Fornecedores</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <style>
+      @media (max-width: 768px) {
+        .table-responsive td {
+          white-space: normal;
+        }
+      }
+    </style>
   </head>
   <body class="bg-light">
     <div class="container mt-4">
-      <h1 class="mb-4">Gerenciamento de Fornecedores</h1>
+      <h1 class="mb-4 text-center">Gerenciamento de Fornecedores</h1>
 
       <!-- Mensagens Flash -->
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
@@ -37,7 +45,7 @@
       <!-- Formulário de Cadastro de Fornecedores -->
       <div class="card mb-4">
         <div class="card-body">
-          <h2>Adicionar/Editar Fornecedor</h2>
+          <h2 class="text-center">Adicionar/Editar Fornecedor</h2>
           <form method="POST" action="{{ url_for('gerenciar_fornecedores') }}">
             <input
               type="hidden"
@@ -101,14 +109,16 @@
                 value="{{ fornecedor.email if fornecedor else '' }}"
               />
             </div>
-            <button type="submit" class="btn btn-success">
-              {{ 'Editar' if fornecedor else 'Adicionar' }}
-            </button>
-            <a
-              href="{{ url_for('gerenciar_fornecedores') }}"
-              class="btn btn-secondary"
-              >Cancelar</a
-            >
+            <div class="d-flex justify-content-between">
+              <button type="submit" class="btn btn-success">
+                {{ 'Editar' if fornecedor else 'Adicionar' }}
+              </button>
+              <a
+                href="{{ url_for('gerenciar_fornecedores') }}"
+                class="btn btn-secondary"
+                >Cancelar</a
+              >
+            </div>
           </form>
         </div>
       </div>
@@ -116,60 +126,67 @@
       <!-- Tabela de Fornecedores -->
       <div class="card">
         <div class="card-body">
-          <h2>Lista de Fornecedores</h2>
-          <table class="table table-bordered table-striped">
-            <thead class="thead-dark">
-              <tr>
-                <th>ID</th>
-                <th>CNPJ</th>
-                <th>Nome</th>
-                <th>Endereço</th>
-                <th>Telefone</th>
-                <th>Email</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for fornecedor in fornecedores %}
-              <tr>
-                <td>{{ fornecedor.id }}</td>
-                <td>{{ fornecedor.cnpj }}</td>
-                <td>{{ fornecedor.nome }}</td>
-                <td>{{ fornecedor.endereco }}</td>
-                <td>{{ fornecedor.telefone }}</td>
-                <td>{{ fornecedor.email }}</td>
-                <td>
-                  <a
-                    href="{{ url_for('gerenciar_fornecedores', fornecedor_id=fornecedor.id) }}"
-                    class="btn btn-warning btn-sm"
-                    >Editar</a
-                  >
-                  <a
-                    href="{{ url_for('excluir_fornecedor', id=fornecedor.id) }}"
-                    class="btn btn-danger btn-sm"
-                    >Excluir</a
-                  >
-                  <a
-                    href="{{ url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id) }}"
-                    class="btn btn-info btn-sm"
-                    >Nova NF</a
-                  >
-                  <!-- Novo Botão para Visualizar Notas Fiscais -->
-                  <a
-                    href="{{ url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id) }}"
-                    class="btn btn-primary btn-sm"
-                    >Ver NFs</a
-                  >
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          <h2 class="text-center">Lista de Fornecedores</h2>
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+              <thead class="thead-dark">
+                <tr>
+                  <th>ID</th>
+                  <th>CNPJ</th>
+                  <th>Nome</th>
+                  <th>Endereço</th>
+                  <th>Telefone</th>
+                  <th>Email</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for fornecedor in fornecedores %}
+                <tr>
+                  <td>{{ fornecedor.id }}</td>
+                  <td>{{ fornecedor.cnpj }}</td>
+                  <td>{{ fornecedor.nome }}</td>
+                  <td>{{ fornecedor.endereco }}</td>
+                  <td>{{ fornecedor.telefone }}</td>
+                  <td>{{ fornecedor.email }}</td>
+                  <td>
+                    <a
+                      href="{{ url_for('gerenciar_fornecedores', fornecedor_id=fornecedor.id) }}"
+                      class="btn btn-warning btn-sm"
+                      >Editar</a
+                    >
+                    <a
+                      href="{{ url_for('excluir_fornecedor', id=fornecedor.id) }}"
+                      class="btn btn-danger btn-sm"
+                      >Excluir</a
+                    >
+                    <a
+                      href="{{ url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id) }}"
+                      class="btn btn-info btn-sm"
+                      >Nova NF</a
+                    >
+                    <a
+                      href="{{ url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id) }}"
+                      class="btn btn-primary btn-sm"
+                      >Ver NFs</a
+                    >
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <a href="/" class="btn btn-secondary mt-4">Voltar ao Início</a>
+      <div class="d-flex justify-content-center mt-4">
+        <a href="/" class="btn btn-secondary">Voltar ao Início</a>
+      </div>
+      <br />
     </div>
-    <br />
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>
