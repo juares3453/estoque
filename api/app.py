@@ -109,15 +109,13 @@ def criar_usuario_inicial():
     Cria um usuário inicial se nenhum usuário existir no banco de dados.
     """
     if Usuario.query.first() is None:
-        username = "admin"
-        password = "admin123"  # Altere esta senha para uma senha forte
+        username = os.getenv("USER")
+        password = os.getenv("PASSWORD")  # Altere esta senha para uma senha forte
 
         novo_usuario = Usuario(username=username)
         novo_usuario.set_password(password)
         db.session.add(novo_usuario)
         db.session.commit()
-        print("Usuário inicial criado: Nome de Usuário='admin', Senha='admin123' (Por favor, altere esta senha imediatamente!)")
-
 
 # Inicializando o banco de dados e criando um usuário inicial, se necessário
 with app.app_context():
