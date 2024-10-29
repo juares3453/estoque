@@ -11,8 +11,9 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
+
 import os
 
 load_dotenv()
@@ -20,8 +21,9 @@ load_dotenv()
 app = Flask(__name__)
 # Configurando o SQLAlchemy para PostgreSQL
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-app.config["SECRET_KEY"] = "chave-secreta"  # Para utilizar mensagens flash
+app.config["SECRET_KEY"] = os.getenv("SESSION_KEY")  # Para utilizar mensagens flash
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # Tempo de expiração da sessão de 1 hora
 db = SQLAlchemy(app)
 
 
@@ -129,8 +131,8 @@ def login_required(f):
         if "user_id" not in session:
             flash("Por favor, faça login para acessar esta página.", "warning")
             return redirect(url_for("login"))
+        session.modified = True  # Atualiza o tempo da sessão a cada requisição
         return f(*args, **kwargs)
-
     return decorated_function
 
 
@@ -234,7 +236,6 @@ def excluir(id):
     
     return redirect(url_for("index"))
 
-
 @app.route("/buscar_ajax", methods=["GET"])
 @login_required
 def buscar_ajax():
@@ -252,13 +253,11 @@ def buscar_ajax():
     ]
     return jsonify(mercadorias)
 
-
 @app.route("/movimentacoes")
 @login_required
 def movimentacoes():
     logs = LogMovimentacao.query.order_by(LogMovimentacao.data_hora.desc()).all()
     return render_template("movimentacoes.html", logs=logs)
-
 
 @app.route("/fornecedores", methods=["GET", "POST"])
 @login_required
@@ -321,7 +320,6 @@ def gerenciar_fornecedores():
     fornecedores = Fornecedor.query.all()
     return render_template('fornecedor.html', fornecedores=fornecedores, fornecedor=fornecedor)
 
-
 @app.route('/excluir_fornecedor/<int:id>')
 @login_required
 def excluir_fornecedor(id):
@@ -353,7 +351,6 @@ def excluir_fornecedor(id):
         flash(f"Erro ao excluir fornecedor: {str(e)}", "error")
     
     return redirect(url_for('gerenciar_fornecedores'))
-
 
 @app.route("/fornecedores/<int:fornecedor_id>/nova_nf", methods=["GET", "POST"])
 @login_required
@@ -432,8 +429,6 @@ def detalhar_nota_fiscal(nf_id):
 
     return render_template("detalhar_nf.html", nota_fiscal=nota_fiscal)
 
-
-
 @app.route("/nota_fiscal/<int:nf_id>/editar", methods=["GET", "POST"])
 @login_required
 def editar_nota_fiscal(nf_id):
@@ -449,7 +444,6 @@ def editar_nota_fiscal(nf_id):
         return redirect(url_for("listar_notas_fiscais", fornecedor_id=nota_fiscal.fornecedor_id))
 
     return render_template("editar_nf.html", nota_fiscal=nota_fiscal)
-
 
 @app.route("/nota_fiscal/<int:nf_id>/excluir", methods=["POST"])
 @login_required
@@ -501,6 +495,7 @@ def excluir_item_nf(nf_id, item_id):
     return redirect(url_for('detalhar_nota_fiscal', nf_id=nf_id))
 
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -510,6 +505,7 @@ def login():
 
         if user and user.check_password(password):
             session["user_id"] = user.id
+            session.permanent = True  # Configura a sessão como permanente para respeitar a expiração configurada
             flash("Login realizado com sucesso!", "success")
             return redirect(url_for("index"))
         else:
@@ -517,14 +513,12 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route("/logout")
 @login_required
 def logout():
     session.pop("user_id", None)
     flash("Logout realizado com sucesso!", "success")
     return redirect(url_for("login"))
-
 
 if __name__ == "__main__":
     app.run(debug=True)
