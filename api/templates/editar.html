@@ -1,53 +1,57 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Editar Mercadoria</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="bg-light">
-    <div class="container mt-4">
-      <h1 class="text-center">Editar Mercadoria</h1>
+{% extends "base.html" %}
 
-      <!-- Mensagens de Alerta -->
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %}
-      <div class="mb-4">
-        {% for category, message in messages %}
-        <div
-          class="alert alert-{{ category }} alert-dismissible fade show"
-          role="alert"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="close"
-            data-dismiss="alert"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %} {% endwith %}
+{% block title %}Editar Mercadoria{% endblock %}
 
-      <!-- Formulário de Edição -->
-      <form method="POST">
+{% block content %}
+<h1 class="text-center mb-4">Editar Mercadoria</h1>
+
+<!-- Mensagens de Alerta -->
+{% with messages = get_flashed_messages(with_categories=true) %} {% if
+messages %}
+<div class="mb-4">
+  {% for category, message in messages %}
+  <div
+    class="alert alert-{{ category }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button
+      type="button"
+      class="close"
+      data-dismiss="alert"
+      aria-label="Close"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %} {% endwith %}
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <!-- Formulário de Edição -->
+        <form method="POST">
         <div class="form-group">
-          <label for="nome">Nome:</label>
+          <label for="codigo">Código:</label>
           <input
             type="text"
             class="form-control"
-            id="nome"
-            name="nome"
-            value="{{ mercadoria.nome }}"
+            id="codigo"
+            name="codigo"
+            value="{{ mercadoria.codigo }}"
             required
           />
+        </div>
+        <div class="form-group">
+          <label for="grupo">Grupo:</label>
+          <select class="form-control" id="grupo" name="grupo" required>
+            {% for g in grupos %}
+            <option value="{{ g }}" {% if mercadoria.grupo == g %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="form-group">
           <label for="quantidade">Quantidade:</label>
@@ -82,15 +86,13 @@
             required
           />
         </div>
-        <div class="text-center">
-          <button type="submit" class="btn btn-warning">Salvar</button>
-          <a href="/" class="btn btn-secondary ml-2">Voltar</a>
-        </div>
-      </form>
+          <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-warning">Salvar</button>
+            <a href="/" class="btn btn-secondary">Voltar</a>
+          </div>
+        </form>
+      </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  </body>
-</html>
+  </div>
+</div>
+{% endblock %}

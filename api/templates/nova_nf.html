@@ -1,16 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Nova Nota Fiscal</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-    />
-  </head>
-  <body class="bg-light">
-    <div class="container mt-4">
+{% extends "base.html" %}
+
+{% block title %}Nova Nota Fiscal{% endblock %}
+
+{% block content %}
       <h2 class="text-center mb-4">
         Criar Nova Nota Fiscal para o Fornecedor: {{ fornecedor.nome }}
       </h2>
@@ -67,6 +59,4 @@
           </form>
         </div>
       </div>
-    </div>
-  </body>
-</html>
+{% endblock %}

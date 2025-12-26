@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>🏥 Controle de Consumo por Cirurgia</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{{ url_for('criar_cirurgia') }}" class="btn btn-primary">
+                ➕ Registrar Nova Cirurgia
+            </a>
+        </div>
+    </div>
+
+    {% if cirurgias %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Data</th>
+                    <th>Paciente</th>
+                    <th>Produto</th>
+                    <th>Foto</th>
+                    <th>Criado por</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cirurgia in cirurgias %}
+                <tr>
+                    <td>#{{ cirurgia.id }}</td>
+                    <td>{{ cirurgia.data_cirurgia.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <strong>{{ cirurgia.nome_paciente }}</strong>
+                        {% if cirurgia.descricao %}
+                        <br><small class="text-muted">{{ cirurgia.descricao[:50] }}{% if cirurgia.descricao|length > 50 %}...{% endif %}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cirurgia.mercadoria %}
+                        <span class="badge badge-info">{{ cirurgia.mercadoria.codigo }}</span><br>
+                        <small>{{ cirurgia.mercadoria.nome[:30] }}</small>
+                        {% else %}
+                        <span class="badge badge-secondary">N/A</span><br>
+                        <small>{{ cirurgia.referencia_produto[:30] }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cirurgia.foto_path %}
+                        <a href="{{ url_for('download_foto_cirurgia', id=cirurgia.id) }}" target="_blank" class="btn btn-sm btn-secondary">
+                            📸 Ver
+                        </a>
+                        {% else %}
+                        <small class="text-muted">Sem foto</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <small>{{ cirurgia.usuario.username }}</small>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('editar_cirurgia', id=cirurgia.id) }}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                        <form method="POST" action="{{ url_for('excluir_cirurgia', id=cirurgia.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir?')">🗑️ Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <strong>Nenhuma cirurgia registrada.</strong> Clique em "Registrar Nova Cirurgia" para adicionar uma.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

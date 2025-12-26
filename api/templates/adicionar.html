@@ -1,93 +1,155 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <title>Adicionar Mercadoria</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="bg-light">
-    <div class="container mt-4">
-      <h1 class="mb-4 text-center">Adicionar Mercadoria</h1>
+{% extends "base.html" %}
 
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %}
-      <div class="mb-4">
-        {% for category, message in messages %}
-        <div
-          class="alert alert-{{ category }} alert-dismissible fade show"
-          role="alert"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="close"
-            data-dismiss="alert"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %} {% endwith %}
+{% block title %}Adicionar Mercadoria{% endblock %}
 
-      <div class="card">
-        <div class="card-body">
-          <form method="POST">
-            <div class="form-group">
-              <label for="nome">Nome:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nome"
-                name="nome"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="quantidade">Quantidade:</label>
-              <input
-                type="number"
-                class="form-control"
-                id="quantidade"
-                name="quantidade"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="descricao">Descrição:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="descricao"
-                name="descricao"
-              />
-            </div>
-            <div class="form-group">
-              <label for="preco">Preço:</label>
-              <input
-                type="number"
-                step="0.01"
-                class="form-control"
-                id="preco"
-                name="preco"
-                required
-              />
-            </div>
-            <div class="d-flex justify-content-between">
-              <button type="submit" class="btn btn-success">Adicionar</button>
-              <a href="/" class="btn btn-secondary">Voltar</a>
-            </div>
-          </form>
+{% block content %}
+<h1 class="mb-4 text-center">Adicionar Mercadoria</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %} {% if
+messages %}
+<div class="mb-4">
+  {% for category, message in messages %}
+  <div
+    class="alert alert-{{ category }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button
+      type="button"
+      class="close"
+      data-dismiss="alert"
+      aria-label="Close"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %} {% endwith %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" id="movTabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="novo-tab" data-toggle="tab" href="#novo" role="tab" aria-controls="novo" aria-selected="true">Nova Mercadoria</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="movimentar-tab" data-toggle="tab" href="#movimentar" role="tab" aria-controls="movimentar" aria-selected="false">Movimentação (Entrada / Saída)</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="nf-tab" data-toggle="tab" href="#nf" role="tab" aria-controls="nf" aria-selected="false">Nova NF</a>
+          </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content mt-3">
+          <div class="tab-pane fade show active" id="novo" role="tabpanel" aria-labelledby="novo-tab">
+            <form method="POST">
+              <input type="hidden" name="form_type" value="novo" />
+              <div class="form-group">
+                <label for="codigo">Código:</label>
+                <input type="text" class="form-control" id="codigo" name="codigo" required />
+              </div>
+              <div class="form-group">
+                <label for="grupo">Grupo:</label>
+                <select class="form-control" id="grupo" name="grupo" required>
+                  {% for g in grupos %}
+                  <option value="{{ g }}">{{ g }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" class="form-control" id="quantidade" name="quantidade" required />
+              </div>
+              <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <input type="text" class="form-control" id="descricao" name="descricao" />
+              </div>
+              <div class="form-group">
+                <label for="preco">Preço:</label>
+                <input type="number" step="0.01" class="form-control" id="preco" name="preco" required />
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-success">Adicionar</button>
+                <a href="/" class="btn btn-secondary">Voltar</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="tab-pane fade" id="movimentar" role="tabpanel" aria-labelledby="movimentar-tab">
+            <form method="POST">
+              <input type="hidden" name="form_type" value="movimentar" />
+              <div class="form-group">
+                <label for="mercadoria_id">Mercadoria:</label>
+                <select class="form-control" id="mercadoria_id" name="mercadoria_id" required>
+                  <option value="">-- selecione --</option>
+                  {% for m in mercadorias %}
+                  <option value="{{ m.id }}">{{ m.codigo }} - {{ m.nome }} ({{ m.quantidade }} disponíveis)</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tipo:</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="mov_type" id="entrada" value="entrada" checked>
+                  <label class="form-check-label" for="entrada">Entrada</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="mov_type" id="saida" value="saida">
+                  <label class="form-check-label" for="saida">Saída</label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="mov_quantidade">Quantidade:</label>
+                <input type="number" class="form-control" id="mov_quantidade" name="mov_quantidade" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="mov_descricao">Descrição (opcional):</label>
+                <input type="text" class="form-control" id="mov_descricao" name="mov_descricao" />
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Registrar Movimentação</button>
+                <a href="/" class="btn btn-secondary">Voltar</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="tab-pane fade" id="nf" role="tabpanel" aria-labelledby="nf-tab">
+            <form method="POST" action="/nova_nf">
+              <div class="form-group">
+                <label for="fornecedor_id">Fornecedor:</label>
+                <select class="form-control" id="fornecedor_id" name="fornecedor_id" required>
+                  <option value="">-- selecione --</option>
+                  {% for f in fornecedores %}
+                  <option value="{{ f.id }}">{{ f.nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="numero_nf">Número da NF:</label>
+                <input type="text" class="form-control" id="numero_nf" name="numero_nf" required />
+              </div>
+              <div class="form-group">
+                <label for="data_emissao">Data de Emissão:</label>
+                <input type="date" class="form-control" id="data_emissao" name="data_emissao" required />
+              </div>
+              <div class="form-group">
+                <label for="data_entrega">Data de Entrega:</label>
+                <input type="date" class="form-control" id="data_entrega" name="data_entrega" required />
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Adicionar Nota Fiscal</button>
+                <a href="/adicionar" class="btn btn-secondary">Voltar</a>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  </body>
-</html>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gerenciar Usuários</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    {% extends "base.html" %}
+
+    {% block title %}Gerenciar Usuários{% endblock %}
+
+    {% block content %}
+    <div class="container mt-4">
+      <h1 class="mb-4">Gerenciar Usuários</h1>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="mb-4">
+        {% for category, message in messages %}
+        <div
+          class="alert alert-{{ category }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="close"
+            data-dismiss="alert"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <a href="/usuarios/criar" class="btn btn-primary mb-3">Criar Novo Usuário</a>
+
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if usuarios %}
+            {% for usuario in usuarios %}
+            <tr>
+              <td>{{ usuario.id }}</td>
+              <td>{{ usuario.username }}</td>
+              <td>{{ usuario.email }}</td>
+              <td>
+                <span
+                  class="badge badge-{% if usuario.role == 'gerente' %}danger{% elif usuario.role == 'supervisor' %}warning{% else %}info{% endif %}"
+                >
+                  {{ usuario.role }}
+                </span>
+              </td>
+              <td>
+                <a
+                  href="/usuarios/{{ usuario.id }}/editar"
+                  class="btn btn-sm btn-warning"
+                >
+                  Editar
+                </a>
+                {% if usuario.id != session.get('user_id') %}
+                <form
+                  method="POST"
+                  action="/usuarios/{{ usuario.id }}/excluir"
+                  style="display: inline"
+                  onsubmit="return confirm('Tem certeza que deseja excluir este usuário?')"
+                >
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    Excluir
+                  </button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">
+                Nenhum usuário cadastrado
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endblock %}
+  </body>
+</html>

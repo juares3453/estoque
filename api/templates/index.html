@@ -1,38 +1,72 @@
 <!DOCTYPE html>
 <html lang="pt-br">
   <head>
-    <title>Estoque de Mercadorias da Essence</title>
+    <title>Estoque de Mercadorias</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <style>
-      .btn-group-responsive {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-      }
-      .btn-group-responsive .btn {
-        width: 100%;
-        margin-bottom: 5px;
-      }
-      @media (min-width: 576px) {
-        .btn-group-responsive {
-          flex-direction: row;
-        }
-        .btn-group-responsive .btn {
-          width: auto;
-          margin-bottom: 0;
-        }
-      }
-    </style>
   </head>
 
   <body class="bg-light">
-    <div class="container mt-4">
-      <h1 class="mb-4 text-center">Estoque de Mercadorias da Essence</h1>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">📦 Estoque</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/adicionar">➕ Movimentações</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/fornecedores">🏢 Fornecedores</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/relatorios">📊 Relatórios</a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link" href="/cirurgias">🏥 Cirurgias</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/informacoes">📋 Log</a>
+          </li>
+          {% if usuario and usuario.role == 'gerente' %}
+          <li class="nav-item">
+            <a class="nav-link" href="/grupos">🗂️ Grupos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/usuarios">👥 Usuários</a>
+          </li>
+          {% endif %}
+        </ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <span class="navbar-text mr-3">
+              👤 <strong>{{ usuario.username }}</strong> ({{ usuario.role }})
+            </span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">🚪 Sair</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container-fluid mt-4">
+      <h1 class="mb-4 text-center">Estoque de Mercadorias</h1>
 
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %}
@@ -56,31 +90,21 @@
       </div>
       {% endif %} {% endwith %}
 
+      <!-- Barra de Pesquisa -->
       <div class="card mb-3">
-        <div
-          class="card-body d-flex justify-content-between flex-column flex-md-row"
-        >
-          <form class="form-inline mb-2 mb-md-0 w-100 w-md-auto">
+        <div class="card-body">
+          <form class="form-inline">
             <input
               type="text"
               id="pesquisa"
-              class="form-control mr-2 w-100"
-              placeholder="Pesquisar mercadoria"
+              class="form-control w-100"
+              placeholder="🔍 Pesquisar mercadoria por código ou nome..."
             />
           </form>
-          <div class="btn-group-responsive">
-            <a href="/movimentacoes" class="btn btn-info mr-1">Movimentações</a>
-            <a href="/fornecedores" class="btn btn-info">Fornecedores</a>
-            <a href="/adicionar" class="btn btn-success ml-md-1"
-              >Adicionar Mercadoria</a
-            >
-            <a href="{{ url_for('logout') }}" class="btn btn-danger ml-md-1"
-              >Logout</a
-            >
-          </div>
         </div>
       </div>
 
+      <!-- Tabela de Mercadorias -->
       <div class="card">
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -91,8 +115,10 @@
               <thead class="thead-dark">
                 <tr>
                   <th>ID</th>
+                  <th>Grupo</th>
                   <th>Nome</th>
                   <th>Quantidade</th>
+                  <th>Status</th>
                   <th>Descrição</th>
                   <th>Preço</th>
                   <th>Ações</th>
@@ -102,21 +128,21 @@
                 {% for mercadoria in mercadorias %}
                 <tr>
                   <td>{{ mercadoria.id }}</td>
+                  <td>{{ mercadoria.grupo }}</td>
                   <td>{{ mercadoria.nome }}</td>
                   <td>{{ mercadoria.quantidade }}</td>
+                  <td>
+                    {% if mercadoria.quantidade > 0 %}
+                    <span class="text-success">Em estoque — {{ mercadoria.quantidade }} restantes</span>
+                    {% else %}
+                    <span class="text-danger">Saída — 0 restantes</span>
+                    {% endif %}
+                  </td>
                   <td>{{ mercadoria.descricao }}</td>
                   <td>R$ {{ mercadoria.preco }}</td>
                   <td>
-                    <a
-                      href="/editar/{{ mercadoria.id }}"
-                      class="btn btn-warning btn-sm"
-                      >Editar</a
-                    >
-                    <a
-                      href="/excluir/{{ mercadoria.id }}"
-                      class="btn btn-danger btn-sm"
-                      >Excluir</a
-                    >
+                    <a href="/editar/{{ mercadoria.id }}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="/excluir/{{ mercadoria.id }}" class="btn btn-danger btn-sm">Excluir</a>
                   </td>
                 </tr>
                 {% endfor %}
@@ -129,6 +155,15 @@
 
     <script>
       $(document).ready(function () {
+        var fornecedores = {{ fornecedores_json|tojson }};
+
+        function fornecedoresOptionsHtml() {
+          var s = '<select class="form-control form-control-sm fornecedor-select d-inline-block ml-2" style="width:auto"><option value="">Fornecedor</option>';
+          fornecedores.forEach(function(f){ s += '<option value="'+f.id+'">'+(f.nome||f.id)+'</option>'; });
+          s += '</select>';
+          return s;
+        }
+
         $("#pesquisa").on("input", function () {
           var query = $(this).val();
           $.ajax({
@@ -137,43 +172,60 @@
             data: { query: query },
             success: function (data) {
               $("#resultados").empty();
-              if (data.length > 0) {
+                if (data.length > 0) {
                 data.forEach(function (mercadoria) {
                   $("#resultados").append(
                     "<tr>" +
+                      "<td>" + mercadoria.id + "</td>" +
+                      "<td>" + mercadoria.grupo + "</td>" +
+                      "<td>" + mercadoria.nome + "</td>" +
+                      "<td>" + mercadoria.quantidade + "</td>" +
+                      "<td>" + (mercadoria.quantidade > 0 ? ('<span class=\"text-success\">Em estoque — ' + mercadoria.quantidade + ' restantes</span>') : '<span class=\"text-danger\">Saída — 0 restantes</span>') + "</td>" +
+                      "<td>" + mercadoria.descricao + "</td>" +
+                      "<td>R$ " + mercadoria.preco.toFixed(2) + "</td>" +
                       "<td>" +
-                      mercadoria.id +
+                      '<a href="/editar/' + mercadoria.id + '" class="btn btn-warning btn-sm">Editar</a> ' +
+                      '<a href="/excluir/' + mercadoria.id + '" class="btn btn-danger btn-sm">Excluir</a>' +
+                      fornecedoresOptionsHtml() +
+                      ' <button class="btn btn-info btn-sm btn-nova-nf">Nova NF</button>' +
+                      ' <button class="btn btn-primary btn-sm btn-ver-nfs">Ver NFs</button>' +
                       "</td>" +
-                      "<td>" +
-                      mercadoria.nome +
-                      "</td>" +
-                      "<td>" +
-                      mercadoria.quantidade +
-                      "</td>" +
-                      "<td>" +
-                      mercadoria.descricao +
-                      "</td>" +
-                      "<td>R$ " +
-                      mercadoria.preco.toFixed(2) +
-                      "</td>" +
-                      "<td>" +
-                      '<a href="/editar/' +
-                      mercadoria.id +
-                      '" class="btn btn-warning btn-sm">Editar</a> ' +
-                      '<a href="/excluir/' +
-                      mercadoria.id +
-                      '" class="btn btn-danger btn-sm">Excluir</a>' +
-                      "</td>" +
-                      "</tr>"
+                    "</tr>"
                   );
                 });
               } else {
                 $("#resultados").append(
-                  '<tr><td colspan="6" class="text-center">Nenhuma mercadoria encontrada</td></tr>'
+                  '<tr><td colspan="8" class="text-center">Nenhuma mercadoria encontrada</td></tr>'
                 );
               }
             },
           });
+          $("#ver_nfs_btn").on('click', function(e){
+            e.preventDefault();
+            var id = $('#fornecedor_select').val();
+            if(!id){
+              alert('Selecione um fornecedor para ver as Notas Fiscais.');
+              return;
+            }
+            window.location.href = '/fornecedores/' + id + '/nfs';
+          });
+
+        // Delegated handlers for per-row NF actions
+        $(document).on('click', '.btn-nova-nf', function(e){
+          e.preventDefault();
+          var sel = $(this).closest('td').find('.fornecedor-select');
+          var id = sel.val();
+          if(!id){ alert('Selecione um fornecedor primeiro.'); return; }
+          window.location.href = '/fornecedores/' + id + '/nova_nf';
+        });
+
+        $(document).on('click', '.btn-ver-nfs', function(e){
+          e.preventDefault();
+          var sel = $(this).closest('td').find('.fornecedor-select');
+          var id = sel.val();
+          if(!id){ alert('Selecione um fornecedor primeiro.'); return; }
+          window.location.href = '/fornecedores/' + id + '/nfs';
+        });
         });
       });
     </script>

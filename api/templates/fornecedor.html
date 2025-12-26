@@ -1,137 +1,133 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <title>Gerenciamento de Fornecedores</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      @media (max-width: 768px) {
-        .table-responsive td {
-          white-space: normal;
-        }
-      }
-    </style>
-  </head>
-  <body class="bg-light">
-    <div class="container mt-4">
-      <h1 class="mb-4 text-center">Gerenciamento de Fornecedores</h1>
+{% extends "base.html" %}
 
-      <!-- Mensagens Flash -->
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %}
-      <div class="mb-4">
-        {% for category, message in messages %}
-        <div
-          class="alert alert-{{ category }} alert-dismissible fade show"
-          role="alert"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="close"
-            data-dismiss="alert"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        {% endfor %}
+{% block title %}Gerenciamento de Fornecedores{% endblock %}
+
+{% block extra_css %}
+<style>
+  @media (max-width: 768px) {
+    .table-responsive td {
+      white-space: normal;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-4 text-center">Gerenciamento de Fornecedores</h1>
+
+<!-- Mensagens Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %} {% if
+messages %}
+<div class="mb-4">
+  {% for category, message in messages %}
+  <div
+    class="alert alert-{{ category }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button
+      type="button"
+      class="close"
+      data-dismiss="alert"
+      aria-label="Close"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %} {% endwith %}
+
+<!-- Formulário de Cadastro de Fornecedores -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="text-center">Adicionar/Editar Fornecedor</h2>
+    <form method="POST" action="{{ url_for('gerenciar_fornecedores') }}">
+      <input
+        type="hidden"
+        id="fornecedor_id"
+        name="fornecedor_id"
+        value="{{ fornecedor.id if fornecedor else '' }}"
+      />
+
+      <div class="form-group">
+        <label for="cnpj">CNPJ:</label>
+        <input
+          type="text"
+          class="form-control"
+          id="cnpj"
+          name="cnpj"
+          required
+          value="{{ fornecedor.cnpj if fornecedor else '' }}"
+        />
       </div>
-      {% endif %} {% endwith %}
-
-      <!-- Formulário de Cadastro de Fornecedores -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <h2 class="text-center">Adicionar/Editar Fornecedor</h2>
-          <form method="POST" action="{{ url_for('gerenciar_fornecedores') }}">
-            <input
-              type="hidden"
-              id="fornecedor_id"
-              name="fornecedor_id"
-              value="{{ fornecedor.id if fornecedor else '' }}"
-            />
-
-            <div class="form-group">
-              <label for="cnpj">CNPJ:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="cnpj"
-                name="cnpj"
-                required
-                value="{{ fornecedor.cnpj if fornecedor else '' }}"
-              />
-            </div>
-            <div class="form-group">
-              <label for="nome">Nome:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nome"
-                name="nome"
-                required
-                value="{{ fornecedor.nome if fornecedor else '' }}"
-              />
-            </div>
-            <div class="form-group">
-              <label for="endereco">Endereço:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="endereco"
-                name="endereco"
-                required
-                value="{{ fornecedor.endereco if fornecedor else '' }}"
-              />
-            </div>
-            <div class="form-group">
-              <label for="telefone">Telefone:</label>
-              <input
-                type="text"
-                class="form-control"
-                id="telefone"
-                name="telefone"
-                required
-                value="{{ fornecedor.telefone if fornecedor else '' }}"
-              />
-            </div>
+      <div class="form-group">
+        <label for="nome">Nome:</label>
+        <input
+          type="text"
+          class="form-control"
+          id="nome"
+          name="nome"
+          required
+          value="{{ fornecedor.nome if fornecedor else '' }}"
+        />
+      </div>
+      <div class="form-group">
+        <label for="endereco">Endereço:</label>
+        <input
+          type="text"
+          class="form-control"
+          id="endereco"
+          name="endereco"
+          required
+          value="{{ fornecedor.endereco if fornecedor else '' }}"
+        />
+      </div>
+      <div class="form-group">
+        <label for="telefone">Telefone:</label>
+        <input
+          type="text"
+          class="form-control"
+          id="telefone"
+          name="telefone"
+          required
+          value="{{ fornecedor.telefone if fornecedor else '' }}"
+        />
+      </div>
             <div class="form-group">
               <label for="email">Email:</label>
               <input
-                type="email"
-                class="form-control"
-                id="email"
-                name="email"
-                required
-                value="{{ fornecedor.email if fornecedor else '' }}"
-              />
-            </div>
-            <div class="d-flex justify-content-between">
-              <button type="submit" class="btn btn-success">
-                {{ 'Editar' if fornecedor else 'Adicionar' }}
-              </button>
-              <a
-                href="{{ url_for('gerenciar_fornecedores') }}"
-                class="btn btn-secondary"
-                >Cancelar</a
-              >
-            </div>
-          </form>
-        </div>
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          required
+          value="{{ fornecedor.email if fornecedor else '' }}"
+        />
       </div>
+      <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-success">
+          {{ 'Editar' if fornecedor else 'Adicionar' }}
+        </button>
+        <a
+          href="{{ url_for('gerenciar_fornecedores') }}"
+          class="btn btn-secondary"
+          >Cancelar</a
+        >
+      </div>
+    </form>
+  </div>
+</div>
 
-      <!-- Tabela de Fornecedores -->
-      <div class="card">
-        <div class="card-body">
-          <h2 class="text-center">Lista de Fornecedores</h2>
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-              <thead class="thead-dark">
-                <tr>
-                  <th>ID</th>
+<!-- Tabela de Fornecedores -->
+<div class="card">
+  <div class="card-body">
+    <h2 class="text-center">Lista de Fornecedores</h2>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th>ID</th>
                   <th>CNPJ</th>
                   <th>Nome</th>
                   <th>Endereço</th>
@@ -160,16 +156,6 @@
                       class="btn btn-danger btn-sm"
                       >Excluir</a
                     >
-                    <a
-                      href="{{ url_for('criar_nota_fiscal', fornecedor_id=fornecedor.id) }}"
-                      class="btn btn-info btn-sm"
-                      >Nova NF</a
-                    >
-                    <a
-                      href="{{ url_for('listar_notas_fiscais', fornecedor_id=fornecedor.id) }}"
-                      class="btn btn-primary btn-sm"
-                      >Ver NFs</a
-                    >
                   </td>
                 </tr>
                 {% endfor %}
@@ -182,11 +168,7 @@
       <div class="d-flex justify-content-center mt-4">
         <a href="/" class="btn btn-secondary">Voltar ao Início</a>
       </div>
-      <br />
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  </body>
-</html>
+  </div>
+</div>
+{% endblock %}

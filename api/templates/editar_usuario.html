@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<h1 class="mb-4 text-center">Editar Usuário: {{ usuario.username }}</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %} {% if
+messages %}
+<div class="mb-4">
+  {% for category, message in messages %}
+  <div
+    class="alert alert-{{ category }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button
+      type="button"
+      class="close"
+      data-dismiss="alert"
+      aria-label="Close"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %} {% endwith %}
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST">
+          <div class="form-group">
+            <label for="username">Username:</label>
+            <input
+              type="text"
+              class="form-control"
+              id="username"
+              value="{{ usuario.username }}"
+              disabled
+            />
+            <small class="form-text text-muted">Username não pode ser alterado.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              value="{{ usuario.email or '' }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Senha (deixar em branco para não alterar):</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="role">Perfil (Role):</label>
+            <select
+              class="form-control"
+              id="role"
+              name="role"
+              required
+            >
+              <option value="funcionario" {% if usuario.role == 'funcionario' %}selected{% endif %}>Funcionário</option>
+              <option value="supervisor" {% if usuario.role == 'supervisor' %}selected{% endif %}>Supervisor</option>
+              <option value="gerente" {% if usuario.role == 'gerente' %}selected{% endif %}>Gerente</option>
+            </select>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-warning">Salvar Alterações</button>
+            <a href="/usuarios" class="btn btn-secondary">Voltar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
