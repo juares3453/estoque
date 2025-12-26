@@ -211,67 +211,70 @@ def criar_usuario_inicial():
         db.session.commit()
 
 # Inicializando o banco de dados e criando um usuário inicial, se necessário
-with app.app_context():
-    db.create_all()
-    
-    # Garantir que as colunas `email` e `role` existem na tabela usuario (para bancos já existentes)
-    try:
-        inspector = db.inspect(db.engine)
-        cols = [c["name"] for c in inspector.get_columns("usuario")]
-        
-        if "email" not in cols:
-            db.session.execute(text("ALTER TABLE usuario ADD COLUMN email VARCHAR(100);"))
-            db.session.commit()
-        
-        if "role" not in cols:
-            db.session.execute(text("ALTER TABLE usuario ADD COLUMN role VARCHAR(50) DEFAULT 'funcionario';"))
-            db.session.execute(text("UPDATE usuario SET role = 'gerente' WHERE id = (SELECT MIN(id) FROM usuario);"))
-            db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print("Warning: não foi possível garantir colunas de usuario automaticamente:", e)
-    
-    criar_usuario_inicial()
+# Em ambientes serverless (Vercel/Lambda) evite abrir conexões automáticas durante import.
+# Execute as migrações manualmente definindo RUN_MIGRATIONS=1 no ambiente quando precisar criar/alterar tabelas.
+if os.getenv("RUN_MIGRATIONS", "0") in ("1", "true", "True"):
+    with app.app_context():
+        db.create_all()
 
-    # Garantir que a coluna `codigo` exista na tabela (para bancos já existentes).
-    try:
-        inspector = db.inspect(db.engine)
-        cols = [c["name"] for c in inspector.get_columns("mercadoria")]
-        if "codigo" not in cols:
-            # adiciona coluna, popula com um valor único baseado no id, adiciona constraint e torna NOT NULL
-            db.session.execute(text("ALTER TABLE mercadoria ADD COLUMN codigo VARCHAR(50);"))
-            db.session.execute(text("UPDATE mercadoria SET codigo = 'm' || id::text WHERE codigo IS NULL OR codigo = '';"))
-            db.session.execute(text("ALTER TABLE mercadoria ADD CONSTRAINT uq_mercadoria_codigo UNIQUE (codigo);"))
-            db.session.execute(text("ALTER TABLE mercadoria ALTER COLUMN codigo SET NOT NULL;"))
-            db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print("Warning: não foi possível garantir coluna 'codigo' automaticamente:", e)
+        # Garantir que as colunas `email` e `role` existem na tabela usuario (para bancos já existentes)
+        try:
+            inspector = db.inspect(db.engine)
+            cols = [c["name"] for c in inspector.get_columns("usuario")]
 
-    # Garantir que a coluna `grupo` exista na tabela mercadoria (para bancos já existentes).
-    try:
-        inspector = db.inspect(db.engine)
-        cols = [c["name"] for c in inspector.get_columns("mercadoria")]
-        if "grupo" not in cols:
-            db.session.execute(text("ALTER TABLE mercadoria ADD COLUMN grupo VARCHAR(100) DEFAULT 'Geral';"))
-            db.session.execute(text("UPDATE mercadoria SET grupo = 'Geral' WHERE grupo IS NULL OR grupo = '';"))
-            db.session.execute(text("ALTER TABLE mercadoria ALTER COLUMN grupo SET NOT NULL;"))
-            db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print("Warning: não foi possível garantir coluna 'grupo' automaticamente:", e)
+            if "email" not in cols:
+                db.session.execute(text("ALTER TABLE usuario ADD COLUMN email VARCHAR(100);"))
+                db.session.commit()
 
-    # Garantir que exista a tabela de grupos e popular com valores padrão se vazia
-    try:
-        if not Grupo.query.first():
-            # Insere os grupos padrão se nenhum existir
-            for nome in PRODUCT_GROUPS:
-                g = Grupo(nome=nome)
-                db.session.add(g)
-            db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print("Warning: não foi possível popular grupos padrão automaticamente:", e)
+            if "role" not in cols:
+                db.session.execute(text("ALTER TABLE usuario ADD COLUMN role VARCHAR(50) DEFAULT 'funcionario';"))
+                db.session.execute(text("UPDATE usuario SET role = 'gerente' WHERE id = (SELECT MIN(id) FROM usuario);"))
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("Warning: não foi possível garantir colunas de usuario automaticamente:", e)
+
+        criar_usuario_inicial()
+
+        # Garantir que a coluna `codigo` exista na tabela (para bancos já existentes).
+        try:
+            inspector = db.inspect(db.engine)
+            cols = [c["name"] for c in inspector.get_columns("mercadoria")]
+            if "codigo" not in cols:
+                # adiciona coluna, popula com um valor único baseado no id, adiciona constraint e torna NOT NULL
+                db.session.execute(text("ALTER TABLE mercadoria ADD COLUMN codigo VARCHAR(50);"))
+                db.session.execute(text("UPDATE mercadoria SET codigo = 'm' || id::text WHERE codigo IS NULL OR codigo = '';"))
+                db.session.execute(text("ALTER TABLE mercadoria ADD CONSTRAINT uq_mercadoria_codigo UNIQUE (codigo);"))
+                db.session.execute(text("ALTER TABLE mercadoria ALTER COLUMN codigo SET NOT NULL;"))
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("Warning: não foi possível garantir coluna 'codigo' automaticamente:", e)
+
+        # Garantir que a coluna `grupo` exista na tabela mercadoria (para bancos já existentes).
+        try:
+            inspector = db.inspect(db.engine)
+            cols = [c["name"] for c in inspector.get_columns("mercadoria")]
+            if "grupo" not in cols:
+                db.session.execute(text("ALTER TABLE mercadoria ADD COLUMN grupo VARCHAR(100) DEFAULT 'Geral';"))
+                db.session.execute(text("UPDATE mercadoria SET grupo = 'Geral' WHERE grupo IS NULL OR grupo = '';"))
+                db.session.execute(text("ALTER TABLE mercadoria ALTER COLUMN grupo SET NOT NULL;"))
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("Warning: não foi possível garantir coluna 'grupo' automaticamente:", e)
+
+        # Garantir que exista a tabela de grupos e popular com valores padrão se vazia
+        try:
+            if not Grupo.query.first():
+                # Insere os grupos padrão se nenhum existir
+                for nome in PRODUCT_GROUPS:
+                    g = Grupo(nome=nome)
+                    db.session.add(g)
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("Warning: não foi possível popular grupos padrão automaticamente:", e)
 
 
 def login_required(f):
