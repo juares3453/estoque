@@ -18,6 +18,7 @@ from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import text
 
 import os
+from pathlib import Path
 import io
 try:
     import pandas as pd
@@ -45,10 +46,12 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # Tempo de expiração da sessão de 1 hora
 
 # Configuração para upload de fotos
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads/cirurgias')
+# Use diretório temporário em ambientes serverless (Vercel, Lambda)
+UPLOAD_FOLDER = Path(os.getenv('UPLOAD_FOLDER', '/tmp/uploads'))
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+# Flask espera string path em config
+app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limite de 16MB
 
 db = SQLAlchemy(app)
@@ -1042,7 +1045,8 @@ def criar_cirurgia():
                     filename = secure_filename(file.filename)
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_")
                     filename = timestamp + filename
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    file_path = Path(app.config['UPLOAD_FOLDER']) / filename
+                    file.save(str(file_path))
                     foto_path = filename
             
             # Converte mercadoria_id para inteiro se não for None
@@ -1101,14 +1105,15 @@ def editar_cirurgia(id):
                 if file and file.filename and allowed_file(file.filename):
                     # Remove foto antiga se existir
                     if cirurgia.foto_path:
-                        old_path = os.path.join(app.config['UPLOAD_FOLDER'], cirurgia.foto_path)
-                        if os.path.exists(old_path):
-                            os.remove(old_path)
-                    
+                        old_path = Path(app.config['UPLOAD_FOLDER']) / cirurgia.foto_path
+                        if old_path.exists():
+                            old_path.unlink()
+
                     filename = secure_filename(file.filename)
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_")
                     filename = timestamp + filename
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    file_path = Path(app.config['UPLOAD_FOLDER']) / filename
+                    file.save(str(file_path))
                     cirurgia.foto_path = filename
             
             db.session.commit()
