@@ -16,6 +16,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv
 from sqlalchemy import text
+from sqlalchemy.pool import NullPool
 
 import os
 from pathlib import Path
@@ -39,7 +40,12 @@ load_dotenv(find_dotenv())
 
 app = Flask(__name__)
 # Configurando o SQLAlchemy para PostgreSQL
+# Use database URL from env and disable pooling for serverless environments (Vercel/Lambda)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "poolclass": NullPool,
+    "pool_pre_ping": True,
+}
 # Usa `SECRET_KEY` se definido, senão tenta `SESSION_KEY` (compatibilidade)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY") or os.getenv("SESSION_KEY")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
